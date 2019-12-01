@@ -2,7 +2,7 @@
 
 (defparameter *input*
   (with-input-from-string (in (rutils:slurp "day01.txt"))
-    (loop :for mass := (read in) :then (read in nil) :while mass :collect mass)))
+    (loop :for mass := (read in nil) :while mass :collect mass)))
 
 (defun fuel-requirement (mass)
   (- (floor (/ mass 3)) 2))
