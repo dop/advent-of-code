@@ -75,6 +75,8 @@ puts then in the front."
                   (setf (elt next-key i) 0)))))
 
 (defun each (arr fn)
+  "Calls FN with every index of ARR. FN must accepts as many arguments as ARR
+has dimensions."
   (loop
     :with dimensions := (array-dimensions arr)
     :for current-key := (first-key dimensions) :then (next-key current-key dimensions)
@@ -86,35 +88,61 @@ puts then in the front."
   (should be equal '((1 . 2) (1 . 1) (1 . 0) (0 . 2) (0 . 1) (0 . 0)) result))
 
 (defun amapi (arr fn)
+  "Calls FN with every index of ARR, creates and returns new array with values returned by FN."
   (let ((arr2 (make-array (array-dimensions arr))))
     (each arr (lambda (&rest args)
                 (setf (apply #'aref arr2 args) (apply fn args))))
     arr2))
 
-(should be equalp
-        #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
-        (amapi (make-array '(2 3)) (lambda (x y) (cons x y))))
+(let ((arr (make-array '(2 3))))
+  (should be equalp
+          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
+          (amapi arr (lambda (x y) (cons x y))))
+  (should be equalp
+          arr
+          #2A((0 0 0) (0 0 0))))
 
 (defun namapi (arr fn)
+  "Calls FN with every index of ARR, overwrites original array cells with values returned by FN."
   (each arr (lambda (&rest args)
               (setf (apply #'aref arr args) (apply fn args))))
   arr)
 
-(should be equalp
-        #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
-        (namapi (make-array '(2 3)) (lambda (x y) (cons x y))))
+(let ((arr (make-array '(2 3))))
+  (should be equalp
+          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
+          (namapi arr (lambda (x y) (cons x y))))
+  (should be equalp
+          arr
+          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))))
 
 (defun namap (arr fn)
+  "Destructively maps FN over ARR."
   (each arr (lambda (&rest args)
               (setf (apply #'aref arr args)
                     (funcall fn (apply #'aref arr args)))))
   arr)
 
-(should be equalp #2A((1 1 1) (1 1 1)) (namap (make-array '(2 3)) (lambda (v) (1+ v))))
+(let ((arr (make-array '(2 3))))
+  (should be equalp
+          #2A((1 1 1) (1 1 1))
+          (namap arr (lambda (v) (1+ v))))
+  (should be equalp
+          #2A((1 1 1) (1 1 1))
+          arr))
 
 (defun amap (arr fn)
-  (amapi arr (lambda (&rest args)
-               (setf (apply #'aref arr args)
-                     (funcall fn (apply #'aref arr args))))))
+  "Maps FN over ARR, returns new array."
+  (let ((arr2 (make-array (array-dimensions arr))))
+    (each arr (lambda (&rest args)
+                (setf (apply #'aref arr2 args)
+                      (funcall fn (apply #'aref arr args)))))
+    arr2))
 
-(should be equalp #2A((1 1 1) (1 1 1)) (amap (make-array '(2 3)) (lambda (v) (1+ v))))
+(let ((arr (make-array '(2 3))))
+  (should be equalp
+          #2A((1 1 1) (1 1 1))
+          (amap arr (lambda (v) (1+ v))))
+  (should be equalp
+          #2A((0 0 0) (0 0 0))
+          arr))
