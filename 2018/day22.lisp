@@ -82,8 +82,6 @@
          (current-equipment 'torch))
     (setf (gethash (list 0 0 current-equipment) distances) 0)
     (labels ((pop-closest-node ()
-               ;; (format t "~a~%" (hash-table-to-alist distances))
-               ;; (format t "~a~%" unvisited)
                (loop
                  :with min-distance :and min-node
                  :for node :being :the :hash-keys :of distances :using (:hash-value distance) :do
@@ -95,17 +93,18 @@
                     (setf unvisited (fset:less unvisited min-node))
                     (return (values min-node min-distance)))))
       (loop :until (fset:empty? unvisited) :do
-        ;; (format t "~5d~%" (fset:size unvisited))
         (multiple-value-bind (node distance) (pop-closest-node)
-          ;; (format t "~a ~a~%" node distance)
           (destructuring-bind (x y equipment) node
-            (loop :for (nx . ny) :in (remove-outside (adjacent x y) max-x max-y) :do
-              (loop :for (nequipment . cost) :in (move-costs (region-type x y) (region-type nx ny) equipment) :do
-                (let ((new-distance-to-neighbour (+ cost distance))
-                      (old-distance-to-neighbour (gethash (list nx ny nequipment) distances)))
-                  (unless (and old-distance-to-neighbour
-                               (< old-distance-to-neighbour new-distance-to-neighbour))
-                    (setf (gethash (list nx ny nequipment) distances) new-distance-to-neighbour)))))))))
+            (labels ((update (nx ny nequipment new-distance)
+                       (let ((old-distance (gethash (list nx ny nequipment) distances)))
+                         (unless (and old-distance (< old-distance new-distance))
+                           (setf (gethash (list nx ny nequipment) distances) new-distance)))))
+              (loop :for nequipment :in (valid-equipment-for (region-type x y))
+                    :when (not (eq nequipment equipment)) :do (update x y nequipment (+ distance 7)))
+              (loop :for (nx . ny) :in (remove-outside (adjacent x y) max-x max-y) :do
+                (loop :for nequipment :in (valid-equipment-for (region-type nx ny))
+                      :when (eq equipment nequipment) :do
+                        (update nx ny nequipment (1+ distance)))))))))
     distances))
 
 (defun adjacent (x y)
@@ -114,8 +113,8 @@
         (cons x (1- y))
         (cons x (1+ y))))
 
-(assoc '(13 704 torch) (hash-table-to-alist (calculate-distances 13 704)) :test #'equal) ;; => ((13 704 TORCH) . 958)
-(assoc '(13 704 torch) (hash-table-to-alist (calculate-distances 21 715)) :test #'equal) ;; => ((13 704 TORCH) . 942)
+(assoc '(13 704 torch) (hash-table-to-alist (calculate-distances 25 725)) :test #'equal)
+;; => ((13 704 TORCH) . 944)
 
 ;; 962 too high
 ;; 942 too low

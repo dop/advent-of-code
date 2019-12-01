@@ -1,5 +1,6 @@
-(cl:defpackage #:aoc201505
-  (:use #:cl #:rutils #:optima))
+(ql:quickload :rutils)
+
+(cl:defpackage #:aoc201505 (:use #:cl #:rutils))
 
 (cl:in-package #:aoc201505)
 
@@ -22,25 +23,23 @@
        (return (and (> vowels 2)
                     (plusp doubles)))))
 
+(defun rule1 (word)
+    (loop :with rule1 := (make-hash-table :test 'equal)
+          :for i :from 0
+          :for (a b) :on word :do
+            (when (and a b)
+                (if-it (gethash (cons a b) rule1)
+                       (when (> (- i it) 1)
+                           (return t))
+                       (setf (gethash (cons a b) rule1) i)))))
+
+(defun rule2 (word)
+    (loop :for (a b c) :on word
+            :thereis (and a b c (char= a c))))
+
 (defun nice-string-2 (input)
-  (loop
-    :with pairs := (make-hash-table :test 'equal)
-    :for pp := nil :then p
-    :for p := nil :then c
-    :for c :across input
-    :for i :from 0
-    :do (when p (push i (gethash (cons p c) pairs)))
-    :count (and pp (char= pp c)) :into separated-doubles
-    :finally
-       (let ((apairs (rutils:hash-table-to-alist pairs)))
-         (return (and (plusp separated-doubles)
-                      (some (lambda (pair) (and (> (length (cdr pair)) 1) (not-close (cdr pair)))) apairs)
-                      (notany (lambda (pair) (and (> (length (cdr pair)) 1) (not (not-close (cdr pair))))) apairs))))))
+    (let ((word (coerce input 'list)))
+        (and (rule1 word) (rule2 word))))
 
-(nice-string-2 "axa")
-
-(defun not-close (list)
-  (loop :for (a b) :on list :by #'cdr
-        :always (if (and a b) (> (abs (- a b)) 1) t)))
-
-(loop :for string :in *input* :count (nice-string string))
+(count-if #'nice-string *input*) ;; => 236
+(count-if #'nice-string-2 *input*) ;; => 51
