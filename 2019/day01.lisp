@@ -1,11 +1,10 @@
 (in-package :advent-of-code-2019-day1)
 
 (defparameter *input*
-  (with-input-from-string (in (rutils:slurp "day01.txt"))
-    (loop :for mass := (read in nil) :while mass :collect mass)))
+  (mapcar #'parse-integer (str:lines (rutils:slurp "day01.txt"))))
 
 (defun fuel-requirement (mass)
-  (- (floor (/ mass 3)) 2))
+  (- (floor mass 3) 2))
 
 ;; What is the sum of the fuel requirements for all of the modules on your
 ;; spacecraft?
