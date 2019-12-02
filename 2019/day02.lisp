@@ -5,24 +5,43 @@
 
 (defparameter *code* (aocu:array-of-list *input*))
 
-(defmacro @@ (i)
-  `(aref *code* (aref *code* ,i)))
+(defmacro @@ (index) `(aref *code* (aref *code* ,index)))
 
-(defun op-1 (i j k)
-  (setf (@@ k) (+ (@@ i) (@@ j))))
+(defvar +opcodes+ (make-hash-table))
 
-(defun op-2 (i j k)
-  (setf (@@ k) (* (@@ i) (@@ j))))
+(defmacro defop (opcode args &body expr)
+  (declare (type integer opcode))
+  (let ((opname (intern (format nil "OP~D" opcode))))
+    (flet ((wrap-indeces (symb)
+             (if (member symb args)
+                 `(@@ ,symb)
+                 symb)))
+      `(progn
+         (defun ,opname ,args
+           (setf (@@ out) ,@(rutils:maptree #'wrap-indeces expr)))
+         (setf (gethash ,opcode +opcodes+) (list #',opname ,(length args)))))))
+
+(defop 1 (a b out)
+  (+ a b))
+
+(defop 2 (a b out)
+  (* a b))
+
+(define-condition invalid-opcode (error)
+  ((opcode :initarg :opcode :reader opcode)
+   (pos :initarg :pos :reader pos)
+   (code :initarg :code :reader code)))
 
 (defun execute (&optional (*code* *code*))
-  (loop :for i := 0 :then (incf i 4) :do
-    (ecase (aref *code* i)
-      (99
-       (return *code*))
-      (1
-       (op-1 (+ i 1) (+ i 2) (+ i 3)))
-      (2
-       (op-2 (+ i 1) (+ i 2) (+ i 3))))))
+  (loop :with i := 0 :do
+    (let ((opcode (aref *code* i)))
+      (if (= 99 opcode)
+          (return *code*)
+          (if-it (gethash opcode +opcodes+)
+                 (destructuring-bind (op argcount) it
+                   (apply op (rutils:range (1+ i) (+ i argcount 1)))
+                   (incf i (1+ argcount)))
+                 (error 'invalid-opcode :code *code* :pos i :opcode opcode))))))
 
 ;; Part 1
 (progn

@@ -3,7 +3,7 @@
   (:nicknames #:aocu)
   (:export
    #:get-input-for-day
-   #:pipe-bytes
+   #:pipe-stream
    #:rotate
    #:each #:amapi #:namapi #:namap #:amap
    #:array-of-list))
