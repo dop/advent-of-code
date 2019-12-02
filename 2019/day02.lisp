@@ -3,7 +3,7 @@
 (defparameter *input*
   (mapcar #'parse-integer (str:split "," (aocu:get-input-for-day 2))))
 
-(defparameter *code* (aocu:list->array *input*))
+(defparameter *code* (aocu:array-of-list *input*))
 
 (defmacro @@ (i)
   `(aref *code* (aref *code* ,i)))
@@ -26,7 +26,7 @@
 
 ;; Part 1
 (progn
-  (setf *code* (aocu:list->array *input*)
+  (setf *code* (aocu:array-of-list *input*)
         (aref *code* 1) 12
         (aref *code* 2) 2)
   (aref (execute *code*) 0)) ; => 5098658 (23 bits, #x4DCCA2)
@@ -34,7 +34,7 @@
 ;; Part 2
 (loop :named outer :for noun :from 0 :to 99 :do
   (loop :for verb :from 9 :to 99 :do
-    (setf *code* (aocu:list->array *input*)
+    (setf *code* (aocu:array-of-list *input*)
           (aref *code* 1) noun
           (aref *code* 2) verb)
     (execute)

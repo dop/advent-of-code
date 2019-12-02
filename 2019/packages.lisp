@@ -6,7 +6,7 @@
    #:pipe-bytes
    #:rotate
    #:each #:amapi #:namapi #:namap #:amap
-   #:list->array))
+   #:array-of-list))
 
 (loop :for i :from 1 :to 25 :do
   (eval `(defpackage ,(make-symbol (format nil "ADVENT-OF-CODE-2019-DAY~D" i))
