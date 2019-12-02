@@ -15,12 +15,23 @@
   (let ((day-input-filename (format nil "day~2,'0D.txt" day)))
     (unless (uiop:file-exists-p day-input-filename)
       (multiple-value-bind (body status)
-          (http-request (format nil "https://adventofcode.com/2019/day/~D/input" day) :want-stream t)
+          (http-request (format nil "https://adventofcode.com/2019/day/~D/input" day)
+                        :want-stream t
+                        :cookie-jar *cookie-jar*)
         (if (= status 200)
-            (with-open-file (out day-input-filename :if-exists :replace :if-does-not-exist :create)
-              (pipe-bytes body out))
-            (throw 'request-failed status))))
+            (overwrite-file day-input-filename body)
+            (throw :request-failed status))))
     (rutils:slurp day-input-filename)))
+
+(defun overwrite-file (filename stream)
+  (alexandria:with-output-to-file (out filename :if-exists :supersede :if-does-not-exist :create)
+    (pipe-stream stream out)))
+
+(defun pipe-stream (in out &optional (buffer-size 1024))
+  (let ((buffer (make-array buffer-size :element-type 'character)))
+    (loop :for chars-read := (read-sequence buffer in)
+          :do (write-sequence buffer out :end chars-read)
+          :while (plusp chars-read))))
 
 (defun array-of-list (list)
   (make-array (length list) :initial-contents list))
