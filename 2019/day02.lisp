@@ -52,7 +52,7 @@
 
 ;; Part 2
 (loop :named outer :for noun :from 0 :to 99 :do
-  (loop :for verb :from 9 :to 99 :do
+  (loop :for verb :from 0 :to 99 :do
     (setf *code* (aocu:array-of-list *input*)
           (aref *code* 1) noun
           (aref *code* 2) verb)
