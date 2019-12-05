@@ -3,7 +3,7 @@
 (defsystem :advent-of-code-2019
   :author "Donatas Petrauskas <donatas.petr@gmail.com>"
   :licence "All rights reserved."
-  :depends-on (:rutils :trivia :alexandria :iterate :priority-queue :drakma :flexi-streams)
+  :depends-on (:rutils :trivia :alexandria :iterate :priority-queue :drakma :flexi-streams :str :should-test)
   :components ((:file "packages")
                (:file "utils")
                (:file "day01")
