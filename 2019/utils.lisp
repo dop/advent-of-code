@@ -4,7 +4,7 @@
   (list
    (make-instance
     'cookie :name "session"
-            :value ""
+            :value (str:trim (rutils:slurp ".session"))
             :domain ".adventofcode.com")))
 
 (defparameter *cookie-jar*
