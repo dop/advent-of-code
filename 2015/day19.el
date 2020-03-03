@@ -1,0 +1,72 @@
+(defvar *mappings*
+  [("Al" . "ThF")
+   ("Al" . "ThRnFAr")
+   ("B" . "BCa")
+   ("B" . "TiB")
+   ("B" . "TiRnFAr")
+   ("Ca" . "CaCa")
+   ("Ca" . "PB")
+   ("Ca" . "PRnFAr")
+   ("Ca" . "SiRnFYFAr")
+   ("Ca" . "SiRnMgAr")
+   ("Ca" . "SiTh")
+   ("F" . "CaF")
+   ("F" . "PMg")
+   ("F" . "SiAl")
+   ("H" . "CRnAlAr")
+   ("H" . "CRnFYFYFAr")
+   ("H" . "CRnFYMgAr")
+   ("H" . "CRnMgYFAr")
+   ("H" . "HCa")
+   ("H" . "NRnFYFAr")
+   ("H" . "NRnMgAr")
+   ("H" . "NTh")
+   ("H" . "OB")
+   ("H" . "ORnFAr")
+   ("Mg" . "BF")
+   ("Mg" . "TiMg")
+   ("N" . "CRnFAr")
+   ("N" . "HSi")
+   ("O" . "CRnFYFAr")
+   ("O" . "CRnMgAr")
+   ("O" . "HP")
+   ("O" . "NRnFAr")
+   ("O" . "OTi")
+   ("P" . "CaP")
+   ("P" . "PTi")
+   ("P" . "SiRnFAr")
+   ("Si" . "CaSi")
+   ("Th" . "ThCa")
+   ("Ti" . "BP")
+   ("Ti" . "TiTi")
+   ("e" . "HF")
+   ("e" . "NAl")
+   ("e" . "OMg")])
+
+(defun positions (sub string)
+  (loop for pos = (search sub string) then (search sub string :start2 (1+ pos))
+        while pos
+        collect pos))
+
+(defun random-elt (seq)
+  (elt seq (random (length seq))))
+
+(defvar *replacement-count* 0)
+
+(defun random-replace (old new string)
+  (let ((pos (random-elt (positions old string))))
+    (if pos
+        (progn
+          (incf *replacement-count*)
+          (concat (subseq string 0 pos)
+                  new
+                  (subseq string (+ pos (length old)))))
+      string)))
+
+(loop
+ initially (setf *replacement-count* 0)
+ with molecule = "CRnCaSiRnBSiRnFArTiBPTiTiBFArPBCaSiThSiRnTiBPBPMgArCaSiRnTiMgArCaSiThCaSiRnFArRnSiRnFArTiTiBFArCaCaSiRnSiThCaCaSiRnMgArFYSiRnFYCaFArSiThCaSiThPBPTiMgArCaPRnSiAlArPBCaCaSiRnFYSiThCaRnFArArCaCaSiRnPBSiRnFArMgYCaCaCaCaSiThCaCaSiAlArCaCaSiRnPBSiAlArBCaCaCaCaSiThCaPBSiThPBPBCaSiRnFYFArSiThCaSiRnFArBCaCaSiRnFYFArSiThCaPBSiThCaSiRnPMgArRnFArPTiBCaPRnFArCaCaCaCaSiRnCaCaSiRnFYFArFArBCaSiThFArThSiThSiRnTiRnPMgArFArCaSiThCaPBCaSiRnBFArCaCaPRnCaCaPMgArSiRnFYFArCaSiThRnPBPMgAr"
+ for i from 0 below 1000
+ do (destructuring-bind (k . v) (elt *mappings* (random* (length *mappings*)))
+      (setf molecule (random-replace v k molecule)))
+ finally (return (values *replacement-count* molecule)))
