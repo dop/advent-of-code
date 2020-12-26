@@ -1,15 +1,41 @@
-(ql:quickload '(#:should-test #:optima))
-
 (defpackage #:dop
-  (:use #:cl #:should-test #:optima)
-  (:export #:each #:amap #:namap #:rotate #:namapi #:amapi))
+  (:use #:cl #:should-test)
+  (:import-from #:alexandria
+                #:map-product
+                #:read-file-into-string
+                #:write-string-into-file
+                #:curry)
+  (:import-from #:named-readtables #:in-readtable)
+  (:import-from #:trivia
+                #:defpattern
+                #:match
+                #:ematch)
+  (:import-from #:rutils
+                #:it
+                #:->
+                #:->>
+                #:%)
+  (:export #:rotate
+           #:binary-split
+           #:translate #:translate!
+           #:incfhash
+           #:doseq
+           #:with-collecting #:counting #:summing #:maximizing #:minimizing #:collecting
+           #:kw
+           #:neighbours
+           #:group-by))
 
 (in-package #:dop)
+
+(in-readtable :aoc)
+
+(defun kw (&rest strings)
+  (intern (str:join #\- (mapcar #'string-upcase strings)) 'keyword))
 
 (defun rotate (seq &optional (n 1))
   "Safe rotate. Does not modify original sequence. Takes items from beginning of
 sequence and pushes to the back. If N is negative, takes items from the end and
-puts then in the front."
+puts them in the front."
   (when seq
     (let ((l (length seq)))
       (if (or (zerop n) (zerop l))
@@ -74,75 +100,67 @@ puts then in the front."
                     (return next-key))
                   (setf (elt next-key i) 0)))))
 
-(defun each (arr fn)
-  "Calls FN with every index of ARR. FN must accepts as many arguments as ARR
-has dimensions."
-  (loop
-    :with dimensions := (array-dimensions arr)
-    :for current-key := (first-key dimensions) :then (next-key current-key dimensions)
-    :while current-key
-    :do (apply fn current-key)))
 
-(let (result)
-  (each (make-array '(2 3)) (lambda (x y) (push (cons x y) result)))
-  (should be equal '((1 . 2) (1 . 1) (1 . 0) (0 . 2) (0 . 1) (0 . 0)) result))
+(defun binary-split (x y)
+  (let ((m (+ x (floor (- y x) 2))))
+    (list x m (1+ m) y)))
 
-(defun amapi (arr fn)
-  "Calls FN with every index of ARR, creates and returns new array with values returned by FN."
-  (let ((arr2 (make-array (array-dimensions arr))))
-    (each arr (lambda (&rest args)
-                (setf (apply #'aref arr2 args) (apply fn args))))
-    arr2))
+(defun translate! (dictionary sequence)
+  (loop for (k v) in dictionary do (nsubstitute v k sequence))
+  sequence)
 
-(let ((arr (make-array '(2 3))))
-  (should be equalp
-          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
-          (amapi arr (lambda (x y) (cons x y))))
-  (should be equalp
-          arr
-          #2A((0 0 0) (0 0 0))))
+(defun translate (dictionary sequence)
+  (loop for (k v) in dictionary
+        for id = (substitute v k sequence) then (substitute v k id)
+        finally (return id)))
 
-(defun namapi (arr fn)
-  "Calls FN with every index of ARR, overwrites original array cells with values returned by FN."
-  (each arr (lambda (&rest args)
-              (setf (apply #'aref arr args) (apply fn args))))
-  arr)
+(defmethod print-object ((o hash-table) stream)
+  (princ "{" stream)
+  (let ((first t))
+    (maphash (lambda (k v)
+               (if first
+                   (rtl:void first)
+                   (write-char #\space stream))
+               (format stream " ~S ~S~%" k v))
+             o))
+  (princ "}" stream))
 
-(let ((arr (make-array '(2 3))))
-  (should be equalp
-          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))
-          (namapi arr (lambda (x y) (cons x y))))
-  (should be equalp
-          arr
-          #2A(((0 . 0) (0 . 1) (0 . 2)) ((1 . 0) (1 . 1) (1 . 2)))))
+(defpattern hash-key (key pattern)
+  (alexandria:with-gensyms (it)
+    `(trivia:guard1 ,it (nth-value 1 (gethash ,key ,it))
+                    (gethash ,key ,it) ,pattern)))
 
-(defun namap (arr fn)
-  "Destructively maps FN over ARR."
-  (each arr (lambda (&rest args)
-              (setf (apply #'aref arr args)
-                    (funcall fn (apply #'aref arr args)))))
-  arr)
+(defpattern hash-table (&rest kvs)
+  `(and (type hash-table)
+        ,@(loop for (key pattern) on kvs by #'cddr
+                collect `(hash-key ,key ,pattern))))
 
-(let ((arr (make-array '(2 3))))
-  (should be equalp
-          #2A((1 1 1) (1 1 1))
-          (namap arr (lambda (v) (1+ v))))
-  (should be equalp
-          #2A((1 1 1) (1 1 1))
-          arr))
+(defun incfhash (key table &key (by 1) (start 0))
+  (symbol-macrolet ((value (gethash key table)))
+    (unless (nth-value 1 value)
+      (setf value start))
+    (incf value by)))
 
-(defun amap (arr fn)
-  "Maps FN over ARR, returns new array."
-  (let ((arr2 (make-array (array-dimensions arr))))
-    (each arr (lambda (&rest args)
-                (setf (apply #'aref arr2 args)
-                      (funcall fn (apply #'aref arr args)))))
-    arr2))
+(defun neighbours (pos)
+  "Returns all neighbours of any-dimensional POS defined as list of
+integer coordinates."
+  (when pos
+    (let (result)
+      (apply #'map-product (lambda (&rest delta)
+                             (unless (apply #'= 0 delta)
+                               (push (mapcar #'+ pos delta) result)))
+             (loop repeat (length pos) collect '(-1 0 1)))
+      result)))
 
-(let ((arr (make-array '(2 3))))
-  (should be equalp
-          #2A((1 1 1) (1 1 1))
-          (amap arr (lambda (v) (1+ v))))
-  (should be equalp
-          #2A((0 0 0) (0 0 0))
-          arr))
+(defun group-by (sequence &key (test #'=) (key #'identity))
+  (when (length sequence)
+    (->> (reduce (lambda (acc x)
+                   (if (funcall test
+                                (funcall key (caar acc))
+                                (funcall key x))
+                       (cons (cons x (car acc)) (cdr acc))
+                       (cons (list x) acc)))
+                 (subseq sequence 1)
+                 :initial-value (list (list (elt sequence 0))))
+         (mapcar #'nreverse)
+         nreverse)))
