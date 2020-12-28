@@ -11,16 +11,15 @@
                 #:match
                 #:ematch)
   (:import-from #:rutils
+                #:range
                 #:it
                 #:->
                 #:->>
-                #:%)
+                #:% #:%%)
   (:export #:rotate
            #:binary-split
            #:translate #:translate!
            #:incfhash
-           #:doseq
-           #:with-collecting #:counting #:summing #:maximizing #:minimizing #:collecting
            #:kw
            #:neighbours
            #:group-by))
@@ -88,6 +87,9 @@ puts them in the front."
 
 (test :test 'test-rotate)
 
+(defun repeat (n el &optional (type 'list))
+  (make-sequence type n :initial-element el))
+
 (defun first-key (dimensions)
   (make-list (length dimensions) :initial-element 0))
 
@@ -141,6 +143,12 @@ puts them in the front."
       (setf value start))
     (incf value by)))
 
+(defun zip-with (type fn seq1 seq2 &rest seqs)
+  (apply #'map type fn seq1 seq2 seqs))
+
+(defun zip (type seq1 seq2 &rest seqs)
+  (apply #'zip-with type #'list seq1 seq2 seqs))
+
 (defun neighbours (pos)
   "Returns all neighbours of any-dimensional POS defined as list of
 integer coordinates."
@@ -149,18 +157,54 @@ integer coordinates."
       (apply #'map-product (lambda (&rest delta)
                              (unless (apply #'= 0 delta)
                                (push (mapcar #'+ pos delta) result)))
-             (loop repeat (length pos) collect '(-1 0 1)))
+             (repeat (length pos) '(-1 0 1)))
       result)))
 
-(defun group-by (sequence &key (test #'=) (key #'identity))
-  (when (length sequence)
-    (->> (reduce (lambda (acc x)
-                   (if (funcall test
-                                (funcall key (caar acc))
-                                (funcall key x))
-                       (cons (cons x (car acc)) (cdr acc))
-                       (cons (list x) acc)))
-                 (subseq sequence 1)
-                 :initial-value (list (list (elt sequence 0))))
-         (mapcar #'nreverse)
-         nreverse)))
+(defun group-by (sequence &key (test #'eql) (key #'identity))
+  (when (plusp (length sequence))
+    (nreverse
+     (reduce (lambda (acc x)
+               (if (funcall test
+                            (funcall key (caar acc))
+                            (funcall key x))
+                   (cons (cons x (car acc)) (cdr acc))
+                   (cons (list x) (cons (nreverse (car acc))
+                                        (cdr acc)))))
+             (subseq sequence 1)
+             :initial-value (list (list (elt sequence 0)))))))
+
+(defmacro with-dimensions ((arr &rest subscripts) &body body)
+  `(destructuring-bind ,subscripts (array-dimensions ,arr)
+     ,@body))
+
+(defun transpose (2d-array)
+  (aops:permute '(1 0) 2d-array))
+
+(defun flip-columns (2d-array)
+  (with-dimensions (2d-array r c)
+    (loop for rr below r do
+      (loop for cc below (floor c 2) do
+        (rotatef (aref 2d-array rr cc)
+                 (aref 2d-array rr (- c cc 1))))))
+  2d-array)
+
+(defun flip-rows (2d-array)
+  (with-dimensions (2d-array r c)
+    (loop for rr below (floor r 2) do
+      (loop for cc below c do
+        (rotatef (aref 2d-array rr cc)
+                 (aref 2d-array (- r rr 1) cc)))))
+  2d-array)
+
+(defun rotate-left (2d-array)
+  (flip-rows (transpose 2d-array)))
+
+(defun rotate-right (2d-array)
+  (flip-columns (transpose 2d-array)))
+
+(defun subscripts-of (array)
+  (apply #'map-product
+         #'list
+         (mapcar #`(range 0 %) (array-dimensions array))))
+
+(setf (fdefinition 'subsof) #'subscripts-of)

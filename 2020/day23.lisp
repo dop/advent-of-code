@@ -31,7 +31,7 @@
     ml))
 
 (defun solve1 (input &optional (cycles 100) (limit 9))
-  (let* ((circle (map 'list #`(- (char-code %) 48) input))
+  (let* ((circle (map 'list #'digit-char-p input))
          (ml (make-mapped-list circle)))
     (setf (cdr (last circle)) circle)
     (labels ((next (label)
@@ -46,8 +46,7 @@
       (->> (mapped-list-values ml)
            (gethash 1)
            (subseq % 1 9)
-           (mapcar #`(code-char (+ 48 %)))
-           (coerce % 'string)))))
+           (format nil "~{~d~}" %)))))
 
 (solve1 (str:trim (dop:puzzle 23))) ;; "96342875"
 

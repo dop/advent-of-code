@@ -108,16 +108,6 @@
 
 (solve (aoc:puzzle 11 2020) #'simple-next-cell-state) ;; 2113
 
-(defmacro with-dimensions ((arr &rest subscripts) &body body)
-  `(destructuring-bind ,subscripts (array-dimensions ,arr)
-     ,@body))
-
-(with-dimensions (+example-grid+ r c)
-  (loop for j below r do
-    (loop for i below c do
-      (princ (aref +example-grid+ j i)))
-    (terpri)))
-
 (defun visible-seats (i j arr)
   (let ((result))
     (loop for (dx . dy) in (loop for (x . y) in (neighbour-indexes i j arr)

@@ -24,7 +24,7 @@
     (#\) 'close)
     (#\* '*)
     (#\+ '+)
-    (t (- (char-code char) 48))))
+    (t (digit-char-p char))))
 
 (defun tokenize (line)
   (when-it (next-token line)
