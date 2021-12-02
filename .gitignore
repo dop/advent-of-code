@@ -1,2 +1,3 @@
-*.txt
 *.fasl
+.session
+.cpcache
