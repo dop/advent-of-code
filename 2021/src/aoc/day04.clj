@@ -51,11 +51,10 @@
 
 (defn solve-2 [{:keys [numbers boards]}]
   (let [n (first numbers)
-        b (mapv (partial replace {n nil}) boards)]
-    (if (and (= 1 (count b))
-             (won? (nth b 0)))
-      (* n (apply + (remove nil? (nth b 0))))
-      (solve-2 {:numbers (rest numbers) :boards (remove won? b)}))))
+        [b & bs :as all] (mapv (partial replace {n nil}) boards)]
+    (if (and (not bs) (won? b))
+      (* n (apply + (remove nil? b)))
+      (solve-2 {:numbers (rest numbers) :boards (remove won? all)}))))
 
 (u/check solve-1 example 4512)
 (u/check solve-2 example 1924)
