@@ -1,7 +1,6 @@
 (ns aoc.day04
   (:require [aoc.utils :as u]
-            [clojure.string :as str]
-            [clojure.test :refer [is]]))
+            [clojure.string :as str]))
 
 (defn parse-data [data]
   (let [[nums & boards] (str/split data #"\n\n")]
