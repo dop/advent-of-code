@@ -4,7 +4,7 @@
             [clojure.java.io :as io]))
 
 (defn read-session []
-  (str/trim (slurp "session.txt")))
+  (str/trim (slurp ".session")))
 
 (defn day-input-file-name [day]
   (format "inputs/day%02d.txt" day))
