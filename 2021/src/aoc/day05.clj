@@ -27,12 +27,8 @@
             (line-points [x y x2 y2])))))
 
 (defn count-intersecting-points [lines]
-  (->> (mapv line-points lines)
-       (apply concat)
-       (frequencies)
-       (vals)
-       (filter #(< 1 %))
-       (count)))
+  (let [points (apply concat (mapv line-points lines))]
+    (count (filter #(< 1 %) (vals (frequencies points))))))
 
 (defn solve-1 [lines]
   (count-intersecting-points (filter straight? lines)))
