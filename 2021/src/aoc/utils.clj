@@ -6,24 +6,27 @@
 (defn read-session []
   (str/trim (slurp ".session")))
 
-(defn day-input-file-name [day]
-  (format "inputs/day%02d.txt" day))
+(defn day-input-file-name [year day]
+  (format "inputs/%s/%02d.txt" year day))
 
-(defn day-input-exists? [day]
-  (.exists (io/file (day-input-file-name day))))
+(defn day-input-exists? [year day]
+  (.exists (io/file (day-input-file-name year day))))
 
-(defn download-input [day]
+(defn download-input [year day]
   (:body
-   (http/get (str "https://adventofcode.com/2021/day/" day "/input")
+   (http/get (str "https://adventofcode.com/" year "/day/" day "/input")
              {:cookies {"session" {:value (read-session)}}})))
 
-(defn get-input [day]
-  (let [fp (day-input-file-name day)]
-    (if (day-input-exists? day)
-      (slurp fp)
-      (let [data (download-input day)]
-        (spit fp data)
-        data))))
+(defn get-input
+  ([day]
+   (get-input (.getYear (java.time.LocalDateTime/now)) day))
+  ([year day]
+   (let [fp (day-input-file-name year day)]
+     (if (day-input-exists? year day)
+       (slurp fp)
+       (let [data (download-input year day)]
+         (spit fp data)
+         data)))))
 
 (defmacro check [f input expected]
   `(let [actual# (~f ~input)
