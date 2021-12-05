@@ -3,7 +3,7 @@
             [clojure.string :as str]))
 
 (defn parse-data [data]
-  (partition 4 (map u/parse-long (str/split data #"[^\d]+"))))
+  (partition 4 (u/parse-longs #"[^\d]+" data)))
 
 (def example (parse-data "0,9 -> 5,9
 8,0 -> 0,8
