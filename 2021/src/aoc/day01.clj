@@ -3,7 +3,7 @@
             [clojure.string :as str]))
 
 (defn parse-data [data]
-  (mapv #(Integer/parseInt %) (str/split-lines data)))
+  (mapv u/parse-int (str/split-lines data)))
 
 (defn count-dips [depths]
   (reduce + (map (comp {false 0 true 1} <) depths (rest depths))))

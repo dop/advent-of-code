@@ -11,13 +11,13 @@
 
 (defn gamma [report]
   (mapv (comp (comp first first)
-              (partial sort-by (comp count second) >)
-              (partial group-by identity))
+              #(sort-by (comp count second) > %)
+              #(group-by identity %))
         (mapv (partial map #(- (int %) (int \0)))
               (u/transpose report))))
 
 (defn epsilon [report]
-  (mapv (partial bit-xor 1) (gamma report)))
+  (mapv #(bit-xor 1 %) (gamma report)))
 
 (defn solve-1 [report]
   (* (to-int (apply str (epsilon report)))

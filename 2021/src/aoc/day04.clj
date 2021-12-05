@@ -16,7 +16,7 @@
   (every? nil? (map board cells)))
 
 (defn won? [board]
-  (if (some (partial struck? board) rows-and-cols)
+  (if (some #(struck? board %) rows-and-cols)
     board))
 
 (def example
@@ -42,7 +42,7 @@
 
 (defn solve-1 [{:keys [numbers boards]}]
   (let [n (first numbers)
-        updated (mapv (partial replace {n nil}) boards)
+        updated (mapv #(replace {n nil} %) boards)
         winning (some won? updated)]
     (if winning
       (* n (apply + (remove nil? winning)))
@@ -50,7 +50,7 @@
 
 (defn solve-2 [{:keys [numbers boards]}]
   (let [n (first numbers)
-        [b & bs :as all] (mapv (partial replace {n nil}) boards)]
+        [b & bs :as all] (mapv #(replace {n nil} %) boards)]
     (if (and (not bs) (won? b))
       (* n (apply + (remove nil? b)))
       (solve-2 {:numbers (rest numbers) :boards (remove won? all)}))))

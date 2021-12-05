@@ -30,7 +30,8 @@
          fname# (format "%s/%s %s" (ns-name *ns*) (name '~f) '~input)]
      (if (= actual# ~expected)
        (println "✓" fname# "=" actual#)
-       (println "-" fname# "=" actual# "but expected" ~expected))))
+       (do (println "¬" fname# "≠" ~expected)
+           (println "  got" actual#)))))
 
 (defn transpose [coll]
   (apply mapv vector coll))
