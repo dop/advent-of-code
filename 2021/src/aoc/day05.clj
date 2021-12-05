@@ -21,9 +21,9 @@
 
 (defn line-points [[x1 y1 x2 y2]]
   (cons [x1 y1]
-        (let [x (+ x1 (compare x2 x1))
-              y (+ y1 (compare y2 y1))]
-          (when (not (and (= x1 x2) (= y1 y2)))
+        (when (not (and (= x1 x2) (= y1 y2)))
+          (let [x (+ x1 (compare x2 x1))
+                y (+ y1 (compare y2 y1))]
             (line-points [x y x2 y2])))))
 
 (defn count-intersecting-points [lines]
