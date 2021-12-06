@@ -1,7 +1,6 @@
 (ns aoc.day06
   (:require [aoc.utils :as u]
-            [clojure.string :as str]
-            [clojure.core.match :refer [match]]))
+            [clojure.string :as str]))
 
 (defn parse-data [data]
   (u/parse-longs #"[,\n]" data))
@@ -12,27 +11,23 @@
   (mapv #(vector (first %) (count %))
         (partition-by identity xs)))
 
-(defn step [rle-fishes]
-  (loop [fishes rle-fishes
-         new 0
-         next []]
-    (if (zero? (count fishes))
-      (if (zero? new)
-        next
-        (conj next [8 new]))
-      (let [[cycle cnt] (first fishes)
-            spawn? (zero? cycle)]
-        (recur (rest fishes)
-               (if spawn? (+ cnt new) new)
-               (conj next (if spawn? [6 cnt] [(dec cycle) cnt])))))))
+(defn fish-counts [fishes]
+  (into {} (rle (sort fishes))))
+
+(defn step [fish-counts]
+  (reduce (fn [next [cycle cnt]]
+            (if (zero? cycle)
+              (merge-with + next {8 cnt} {6 cnt})
+              (merge-with + next {(dec cycle) cnt})))
+          {} fish-counts))
 
 (defn solve-1
   ([fishes]
    (solve-1 80 fishes))
   ([cycles fishes]
-   (loop [fishes (rle fishes) n cycles]
+   (loop [fishes (fish-counts fishes) n cycles]
      (if (zero? n)
-       (apply + (map second fishes))
+       (apply + (vals fishes))
        (recur (step fishes) (dec n))))))
 
 (defn solve-2 [fishes]
