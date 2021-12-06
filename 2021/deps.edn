@@ -1,1 +1,2 @@
-{:deps {clj-http/clj-http {:mvn/version "3.12.3"}}}
+{:deps {clj-http/clj-http {:mvn/version "3.12.3"}
+        org.clojure/core.match {:mvn/version "1.0.0"}}}

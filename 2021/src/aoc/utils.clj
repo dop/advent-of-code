@@ -53,3 +53,7 @@
 
 (def parse-ints (partial parse parse-int))
 (def parse-longs (partial parse parse-long))
+
+(defn rle [xs]
+  (mapv #(vector (first %) (count %))
+        (partition-by identity xs)))

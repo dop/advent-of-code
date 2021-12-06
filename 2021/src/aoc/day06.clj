@@ -7,15 +7,8 @@
 
 (def example (parse-data "3,4,3,1,2"))
 
-(defn rle [xs]
-  (mapv #(vector (first %) (count %))
-        (partition-by identity xs)))
-
-(defn fish-counts [fishes]
-  (into {} (rle (sort fishes))))
-
 (defn step [fish-counts]
-  (reduce (fn [next [cycle cnt]]
+  (reduce-kv (fn [next cycle cnt]
             (if (zero? cycle)
               (merge-with + next {8 cnt} {6 cnt})
               (merge-with + next {(dec cycle) cnt})))
@@ -25,7 +18,7 @@
   ([fishes]
    (solve-1 80 fishes))
   ([cycles fishes]
-   (loop [fishes (fish-counts fishes) n cycles]
+   (loop [fishes (frequencies fishes) n cycles]
      (if (zero? n)
        (apply + (vals fishes))
        (recur (step fishes) (dec n))))))
