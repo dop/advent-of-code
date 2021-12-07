@@ -32,9 +32,11 @@
   `(let [actual# (~f ~input)
          fname# (format "%s/%s %s" (ns-name *ns*) (name '~f) '~input)]
      (if (= actual# ~expected)
-       (println "✓" fname# "=" actual#)
+       (do (println "✓" fname# "=" actual#)
+           (vector true actual#))
        (do (println "¬" fname# "≠" ~expected)
-           (println "  got" actual#)))))
+           (println "  got" actual#)
+           (vector false actual#)))))
 
 (defn transpose [coll]
   (apply mapv vector coll))
