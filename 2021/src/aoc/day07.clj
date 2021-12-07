@@ -10,10 +10,12 @@
 (defn fuel [costfn target crabs]
   (reduce-kv (fn [sum pos cnt] (+ sum (* cnt (costfn pos target)))) 0 crabs))
 
+(defn distance [a b]
+  (Math/abs ^long (- a b)))
+
 (defn solve-1
   ([positions]
-   (solve-1 (fn [pos target] (Math/abs (- target pos)))
-            positions))
+   (solve-1 distance positions))
   ([costfn positions]
    (let [crabs (frequencies positions)]
      (apply min
@@ -24,13 +26,12 @@
   (/ (* n (+ 1 n)) 2))
 
 (defn solve-2 [positions]
-  (solve-1 (fn [pos target] (sum-1-n (Math/abs (- target pos))))
-           positions))
+  (solve-1 (comp sum-1-n distance) positions))
 
 (u/check solve-1 example 37)
 (u/check solve-2 example 168)
 
 (def data (parse-data (u/get-input 7)))
 
-(time (u/check solve-1 data 339321))
-(time (u/check solve-2 data 95476244))
+(u/check solve-1 data 339321)
+(u/check solve-2 data 95476244)
