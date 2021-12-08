@@ -57,4 +57,4 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 (def data (parse-data (u/get-input 8)))
 
 (u/check solve-1 data 543)
-(u/check solve-2 data 95476244)
+(u/check solve-2 data 994266)
