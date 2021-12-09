@@ -26,7 +26,6 @@
   (defn lowest-points [{:keys [height width] :as input}]
     (for [y (range height)
           x (range width)
-          :when (inside? input x y)
           :let [depth (depth-at input x y)]
           :when (u/none (fn [[x y]] (<= (depth-at input x y) depth))
                         (adjacent-points input x y))]
