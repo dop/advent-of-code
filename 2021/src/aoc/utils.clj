@@ -59,3 +59,16 @@
 (defn rle [xs]
   (mapv #(vector (first %) (count %))
         (partition-by identity xs)))
+
+(defn digit [c]
+  (- (int c) (int \0)))
+
+(defn digits [str]
+  (mapv digit (vec str)))
+
+(defmacro unless [test & body]
+  `(when (not ~test)
+     ~@body))
+
+(defn none [pred coll]
+  (not (some pred coll)))
