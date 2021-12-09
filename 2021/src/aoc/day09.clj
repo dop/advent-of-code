@@ -61,7 +61,6 @@
 
   (u/check solve-2 example 1134))
 
-
 (def data (parse-data (u/get-input 9)))
 
 (u/check solve-1 data 462)
