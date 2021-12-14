@@ -29,10 +29,12 @@
          data)))))
 
 (defmacro check [f input expected]
-  `(let [actual# (~f ~input)
+  `(let [start# (. System (currentTimeMillis))
+         actual# (~f ~input)
+         duration# (double (- (. System (currentTimeMillis)) start#))
          fname# (format "%s/%s %s" (ns-name *ns*) (name '~f) '~input)]
      (if (= actual# ~expected)
-       (do (println "✓" fname# "=" actual#)
+       (do (println "✓" fname# "=" actual# "in" duration# "msec.")
            (vector :ok actual#))
        (do (println "¬" fname# "≠" ~expected)
            (println "  got" actual#)
@@ -72,3 +74,16 @@
 
 (defn none [pred coll]
   (not (some pred coll)))
+
+(defn count-if
+  ([pred coll]
+   (count-if identity pred coll))
+  ([key pred coll]
+   (count (filter (comp pred key) coll))))
+
+(defn map-kv [f m]
+  (reduce-kv (fn [m k v]
+               (assoc m k (f k v))) {} m))
+
+(defn map-vals [f m]
+  (map-kv (fn [_ v] (f v)) m))
