@@ -12,6 +12,6 @@
              `(try
                 (require '[~(symbol (format "aoc.day%02d" day))])
                 (catch Exception e#
-                  (println ~(format "- no day %d solution." day))))))))
+                  (println (format "- failed day %d solution: %s" ~day (:cause (Throwable->map e#))))))))))
 
 (time (run-all))
