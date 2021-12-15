@@ -87,3 +87,8 @@
 
 (defn map-vals [f m]
   (map-kv (fn [_ v] (f v)) m))
+
+(defn coordinates [w h xs]
+  (into {} (for [x (range w)
+                 y (range h)]
+             [[x y] (xs (+ (* y w) x))])))
