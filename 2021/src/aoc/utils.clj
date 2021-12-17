@@ -29,15 +29,16 @@
          data)))))
 
 (defmacro check [f input expected]
-  `(let [start# (. System (currentTimeMillis))
+  `(let [start# (System/currentTimeMillis)
          actual# (~f ~input)
-         duration# (double (- (. System (currentTimeMillis)) start#))
-         fname# (format "%s/%s %s" (ns-name *ns*) (name '~f) '~input)]
+         duration# (double (- (System/currentTimeMillis) start#))
+         fname# (format "%s %s %s" (ns-name *ns*) (name '~f) '~input)]
      (if (= actual# ~expected)
        (do (println "✓" fname# "=" actual# "in" duration# "msec.")
            (vector :ok actual#))
        (do (println "¬" fname# "≠" ~expected)
            (println "  got" actual#)
+           (println "  took" duration# "msec.")
            (vector :fail actual#)))))
 
 (defn transpose [coll]

@@ -7,7 +7,9 @@
     [2021 12 d] d _ 25))
 
 (defmacro run-all []
-  (let [days (range 1 (inc (max-day)))]
+  (let [days (if (empty? *command-line-args*)
+               (range 1 (inc (max-day)))
+               (map #(Integer/parseInt %) *command-line-args*))]
     `(do ~@(for [day days]
              `(try
                 (require '[~(symbol (format "aoc.day%02d" day))])
