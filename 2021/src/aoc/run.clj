@@ -1,4 +1,4 @@
-(ns aoc.top
+(ns aoc.run
   (:require [clojure.string :as str]
             [clojure.core.match :refer [match]]))
 
@@ -16,4 +16,5 @@
                 (catch Exception e#
                   (println (format "- failed day %d solution: %s" ~day (:cause (Throwable->map e#))))))))))
 
-(time (run-all))
+(defn -main []
+  (time (run-all)))

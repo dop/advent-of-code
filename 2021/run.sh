@@ -1,3 +1,3 @@
 #!/bin/sh
 
-clojure -M src/aoc/run.clj $*
+clojure -M -m aoc.run $*

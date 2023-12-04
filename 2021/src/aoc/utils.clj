@@ -3,6 +3,8 @@
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
+(def -year 2021)
+
 (defn read-session []
   (str/trim (slurp ".session")))
 
@@ -19,7 +21,7 @@
 
 (defn get-input
   ([day]
-   (get-input (.getYear (java.time.LocalDateTime/now)) day))
+   (get-input (or -year (.getYear (java.time.LocalDateTime/now))) day))
   ([year day]
    (let [fp (day-input-file-name year day)]
      (if (day-input-exists? year day)
@@ -92,4 +94,4 @@
 (defn coordinates [w h xs]
   (into {} (for [x (range w)
                  y (range h)]
-             [[x y] (xs (+ (* y w) x))])))
+             [[x y] (nth xs (+ (* y w) x))])))
