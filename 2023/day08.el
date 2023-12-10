@@ -38,7 +38,7 @@
           (len (length instructions)))
       (seq-reduce (lambda (acc p)
                     (calcFunc-lcm acc
-                                  (loop for i from 0 to 100000
+                                  (loop for i from 0 ;; to 100000
                                         until (eq ?Z (elt p 2))
                                         ;; do (message "%d %s %c" i p (elt instructions (mod i len)))
                                         do (setf p (getf (gethash p network) (elt instructions (mod i len))))
