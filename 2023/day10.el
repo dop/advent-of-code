@@ -1,4 +1,4 @@
-s;; -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'cl)
 (require 'subr-x)
@@ -75,7 +75,6 @@ s;; -*- lexical-binding: t; -*-
                do (visit! next)
                ;; do (print (format "%d %d %s %c" i next dir (aref maze next)))
                finally (return (/ (+ 2 i) 2)))))))) ;; 6714
-
 
 
 
