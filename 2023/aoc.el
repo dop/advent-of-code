@@ -60,3 +60,16 @@
   (let ((len (length seq)))
     (loop for i from 0 below (/ len 2)
           always (eq (elt seq i) (elt seq (- len i 1))))))
+
+(defun read-grid (raw)
+  (let* ((grid (string-trim raw))
+         (cols (seq-position grid ?\n))
+         (rows (1+ (seq-count (partial #'eq ?\n) grid)))
+         (block (string-replace "\n" "" grid)))
+    (list rows cols block)))
+
+(defun print-grid (rows cols block)
+  (loop for r from 0 below rows
+        do (loop for c from 0 below cols
+                 do (princ (format "%c" (aref block (+ c (* r cols))))))
+        do (princ "\n")))
