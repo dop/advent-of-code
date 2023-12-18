@@ -73,3 +73,24 @@
         do (loop for c from 0 below cols
                  do (princ (format "%c" (aref block (+ c (* r cols))))))
         do (princ "\n")))
+
+(defmacro collecting (collectors &rest body)
+  (declare (indent 1))
+  (let ((single (atom collectors))
+        (value  (gensym "value")))
+    (when single
+      (setq collectors (list collectors)))
+    `(let ,collectors
+       (cl-flet ,(mapcar (lambda (collector)
+                           `(,collector (,value) (push ,value ,collector) ,value))
+                         collectors)
+         ,@body
+         ,(if single
+              `(nreverse ,(car collectors))
+            `(mapcar #'nreverse (list ,@collectors)))))))
+
+(defun hash-table-alist (table)
+  "Construct an alist from a TABLE hash table."
+  (let ((alist nil))
+    (maphash (lambda (key value) (push (cons key value) alist)) table)
+    alist))
