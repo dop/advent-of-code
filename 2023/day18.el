@@ -54,28 +54,35 @@
 
 ;; day 18 part 2
 
-;; TODO
-
-(with-puzzle (:in "day18.example.txt")
-  (let ((pos (list 0 0))                              ;; r c
-        (bl 1e100) (br -1e100) (bu 1e100) (bd -1e100) ;; bounds
+(with-puzzle (:in "day18.txt")
+  (let ((points (list (list 0 0)))
+        (perimeter 0)
         (ground (make-hash-table :test 'equal)))
     (cl-labels ((zip (fn a b)
                   (map 'list fn a b)))
       (loop for line in (string-lines (buffer-string))
             for (_ _ color) = (string-split line "[ ()]" t)
-            ;; do (pr color)
             do (let ((dir (case (elt color 6)
                             (?0 (list 0 1))
+                            (?1 (list 1 0))
                             (?2 (list 0 -1))
-                            (?3 (list -1 0))
-                            (?1 (list 1 0))))
+                            (?3 (list -1 0))))
                      (dist (string-to-number (subseq color 1 6) 16)))
-                 ;; (pr "%s %s" dir dist)
-                 (setf pos (map 'list #'+ (map 'list #'* dir (list dist dist))))
-                 (setf bl (min bl (cadr pos))
-                       br (max br (cadr pos))
-                       bu (min bu (car pos))
-                       bd (max bd (car pos))))))
-    (* (- br bl) (- bd bu))))
+                 (pr "%s %s %s" color dir dist)
+                 (incf perimeter dist)
+                 (push (map 'list '+ (car points) (map 'list #'+ (map 'list #'* dir (list dist dist))))
+                       points)
+
+                 ;; (setf bl (min bl (cadr pos))
+                 ;;       br (max br (cadr pos))
+                 ;;       bu (min bu (car pos))
+                 ;;       bd (max bd (car pos)))
+                 )))
+    (+ (/ perimeter 2)
+       (/ (loop for ((a b) (c d)) on points
+                when (and c d)
+                sum (- (* a d) (* b c)))
+          2)
+       1))) ;; 194033958221830
+
 
