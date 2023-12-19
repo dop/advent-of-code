@@ -94,3 +94,15 @@
   (let ((alist nil))
     (maphash (lambda (key value) (push (cons key value) alist)) table)
     alist))
+
+(defun alist-hash-table (alist &rest table-keyword-args)
+  "Construct an a hash table from ALIST."
+  (let ((table (apply #'make-hash-table table-keyword-args)))
+    (mapc (pcase-lambda (`(,key . ,value))
+            (setf (gethash key table) value))
+          alist)
+    table))
+
+(defun ressoc (k v alist)
+  (cons (cons k v)
+        (cl-remove k alist :key #'car)))
