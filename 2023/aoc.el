@@ -15,6 +15,22 @@
   (princ (apply #'format template args))
   (terpri))
 
+(defmacro pri (&rest args)
+  (let ((template nil)
+        (named-args nil))
+    (loop for arg in args do
+          (cond ((and (symbolp arg) (not (keywordp arg)))
+                 (push (symbol-name arg) named-args)
+                 (push arg named-args)
+                 (push "%s = %s" template))
+                (t
+                 (push arg named-args)
+                 (push "%s" template))))
+    `(princ (format ,(concat (string-join (reverse template) ", ") "\n")
+                    ,@(reverse named-args)))))
+
+(macroexpand-1 '(pri 'tag))
+
 (defun neq (a b)
   (not (eq a b)))
 
@@ -38,9 +54,10 @@
 (defmacro with-puzzle (options &rest body)
   (declare (indent 1))
   `(with-output-buffer
-       ,(cl-typecase options
-          (string "*debug*")
-          (t (getf options :out "*debug*")))
+       ,(let ((default (if noninteractive t "*debug*")))
+          (cl-typecase options
+            (string default)
+            (t (getf options :out default))))
      (with-current-buffer
          (find-file-noselect ,(cl-typecase options
                                 (string options)
@@ -106,3 +123,14 @@
 (defun ressoc (k v alist)
   (cons (cons k v)
         (cl-remove k alist :key #'car)))
+
+(defalias '^ #'expt)
+
+(defun seq-bisect-by (pred sequence)
+  (let (ts nils)
+    (seq-doseq (el sequence)
+      (if (funcall pred el)
+          (push el ts)
+        (push el nils)))
+    (list (reverse ts)
+          (reverse nils))))
