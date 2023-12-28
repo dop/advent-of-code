@@ -3,37 +3,6 @@
 (require 'cl)
 (require 'subr-x)
 
-(defalias 'partial #'apply-partially)
-
-(defun print-grid (rows cols block)
-  (loop for r from 0 below rows
-        do (loop for c from 0 below cols
-                 do (princ (format "%c" (aref block (+ c (* r cols))))))
-        do (princ "\n")))
-
-(defun pr (template &rest args)
-  (princ (apply #'format template args))
-  (terpri))
-
-(defmacro pri (&rest args)
-  (let ((template nil)
-        (named-args nil))
-    (loop for arg in args do
-          (cond ((and (symbolp arg) (not (keywordp arg)))
-                 (push (symbol-name arg) named-args)
-                 (push arg named-args)
-                 (push "%s = %s" template))
-                (t
-                 (push arg named-args)
-                 (push "%s" template))))
-    `(princ (format ,(concat (string-join (reverse template) ", ") "\n")
-                    ,@(reverse named-args)))))
-
-(macroexpand-1 '(pri 'tag))
-
-(defun neq (a b)
-  (not (eq a b)))
-
 (defun set-add (set value)
   (setf (gethash value set) t))
 
@@ -49,29 +18,32 @@
        (with-current-buffer standard-output
          (erase-buffer)
          (redisplay)))
-     (print (progn ,@body))))
+     ,@body))
 
 (defmacro with-puzzle (options &rest body)
   (declare (indent 1))
-  `(with-output-buffer
-       ,(let ((default (if noninteractive t "*debug*")))
-          (cl-typecase options
-            (string default)
-            (t (getf options :out default))))
-     (with-current-buffer
-         (find-file-noselect ,(cl-typecase options
-                                (string options)
-                                (t (getf options :in))))
-       ,@body)))
+  (let ((time (gensym "time"))
+        (result (gensym "result")))
+    `(with-output-buffer
+         ,(let ((default (if noninteractive t "*debug*")))
+            (cl-typecase options
+              (string default)
+              (t (getf options :out default))))
+       (with-current-buffer
+           (find-file-noselect ,(cl-typecase options
+                                  (string options)
+                                  (t (getf options :in))))
+         (let ((,time (current-time))
+               (,result (progn ,@body)))
+           (princ (format "=> %s\nin %0.6f sec."
+                          ,result
+                          (float-time (time-since ,time)))))))))
 
 (defmacro with-cache (key table &rest body)
   (declare (indent 2))
   `(or (gethash ,key ,table)
        (setf (gethash ,key ,table)
              (progn ,@body))))
-
-(defun seq-count-eq (el sequence)
-  (seq-count (lambda (e) (eq el e)) sequence))
 
 (defun palindrome-p (seq)
   (let ((len (length seq)))
@@ -85,52 +57,61 @@
          (block (string-replace "\n" "" grid)))
     (list rows cols block)))
 
-(defun print-grid (rows cols block)
+(defun print-block (rows cols block printfn &optional newlinefn)
   (loop for r from 0 below rows
         do (loop for c from 0 below cols
-                 do (princ (format "%c" (aref block (+ c (* r cols))))))
-        do (princ "\n")))
+                 do (let ((v (aref block (+ c (* r cols)))))
+                      (funcall printfn r c v)))
+        do (or (and newlinefn (funcall newlinefn))
+               (princ "\n"))))
 
-(defmacro collecting (collectors &rest body)
-  (declare (indent 1))
-  (let ((single (atom collectors))
-        (value  (gensym "value")))
-    (when single
-      (setq collectors (list collectors)))
-    `(let ,collectors
-       (cl-flet ,(mapcar (lambda (collector)
-                           `(,collector (,value) (push ,value ,collector) ,value))
-                         collectors)
-         ,@body
-         ,(if single
-              `(nreverse ,(car collectors))
-            `(mapcar #'nreverse (list ,@collectors)))))))
+(defun print-grid (rows cols block &optional overlayfn)
+  (print-block rows cols block
+               (lambda (r c val)
+                 (princ (or (and overlayfn (funcall overlayfn r c)) val)))))
 
-(defun hash-table-alist (table)
-  "Construct an alist from a TABLE hash table."
-  (let ((alist nil))
-    (maphash (lambda (key value) (push (cons key value) alist)) table)
-    alist))
+(defstruct matrix
+  (rows :type fixnum)
+  (cols :type fixnum)
+  (data :type vector))
 
-(defun alist-hash-table (alist &rest table-keyword-args)
-  "Construct an a hash table from ALIST."
-  (let ((table (apply #'make-hash-table table-keyword-args)))
-    (mapc (pcase-lambda (`(,key . ,value))
-            (setf (gethash key table) value))
-          alist)
-    table))
+(defun matrix (rows cols data)
+  (make-matrix :rows rows :cols cols :data data))
 
-(defun ressoc (k v alist)
-  (cons (cons k v)
-        (cl-remove k alist :key #'car)))
+(defun print-matrix (m)
+  (with-slots (rows cols data) m
+    (print-block rows cols data (lambda (r c v) (princ (format "% 7.1f" v))))))
 
-(defalias '^ #'expt)
+(defun gaussian-elimination (matrix)
+  (with-slots (rows cols data) matrix
+    (assert (= (1+ rows) cols))
+    (cl-macrolet ((ref (r c)
+                    `(aref data (+ ,c (* ,r cols)))))
+      ;; (pri rows cols)
+      (loop for i from 0 below (1- rows)
+            ;; do (pri i)
+            do (assert (not (= 0 (ref i i))))
+            do (loop for j from (1+ i) below rows
+                     ;; do (pri j)
+                     do (let ((r (/ (float (ref j i)) (ref i i))))
+                          ;; (pri r '= (ref j i) '/ (ref i i))
+                          (loop for k from 0 below cols
+                                ;; do (pri i j k (ref j k) '- (* r (ref i k)) '= (- (ref j k) (* r (ref i k))))
+                                do (decf (ref j k) (* r (ref i k)))))))
 
-(defun seq-bisect-by (pred sequence)
-  (let (ts nils)
-    (seq-doseq (el sequence)
-      (if (funcall pred el)
-          (push el ts)
-        (push el nils)))
-    (list (reverse ts)
-          (reverse nils))))
+      ;; (print-matrix matrix)
+      ;; back substitute
+      (loop for i from (1- rows) downto 0
+            ;; do (pri i (1- rows) (1+ i))
+            do (loop for j from (1- rows) downto (1+ i)
+                     ;; do (pri j)
+                     do (decf (ref i (1- cols))
+                              (* (ref i j) (ref j (1- cols))))
+                     do (setf (ref i j) 0)
+                     finally
+                     ;; (pri :fin i j (ref i j))
+                     (setf (ref i (1- cols)) (/ (ref i (1- cols))
+                                                (ref i j))
+                           (ref i j) 1))
+            ;; do (print-matrix matrix)
+            ))))
