@@ -6,8 +6,9 @@
 (defun set-add (set value)
   (setf (gethash value set) t))
 
-(defun counthash (key table)
-  (setf (gethash key table) (1+ (gethash key table 0))))
+(defun counthash (key table &optional increment)
+  (setf (gethash key table) (+ (gethash key table 0)
+                               (or increment 1))))
 
 (defmacro with-output-buffer (name &rest body)
   (declare (indent 1))
@@ -70,10 +71,7 @@
                (lambda (r c val)
                  (princ (or (and overlayfn (funcall overlayfn r c)) val)))))
 
-(defstruct matrix
-  (rows :type fixnum)
-  (cols :type fixnum)
-  (data :type vector))
+(defstruct matrix rows cols data)
 
 (defun matrix (rows cols data)
   (make-matrix :rows rows :cols cols :data data))
