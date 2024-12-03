@@ -1,0 +1,35 @@
+#!/bin/zsh
+
+sign () {
+    N=$1
+    if [ $N -lt 0 ]; then
+        echo -1
+    elif [ $N -gt 0 ]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+TOTAL=0
+BAD=0
+
+
+while read -A ROW; do
+    (( TOTAL++ ))
+    LEN=${#ROW[*]}
+    i=2
+    while [ $i -le $LEN ]; do
+        DIFF=$(( ROW[i] - ROW[i-1] ))
+        if [ $DIFF -gt 3 -o $DIFF -lt -3 -o $DIFF -eq 0 ]; then
+            (( BAD++ ))
+            break
+        fi
+        if [ $i -lt $LEN -a $(sign $DIFF) != $(sign $(( ROW[i+1] - ROW[i] ))) ]; then
+            (( BAD++ ))
+            break
+        fi
+        (( i++ ))
+    done
+done
+echo $(( TOTAL - BAD ))

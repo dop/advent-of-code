@@ -1,0 +1,28 @@
+#!/bin/zsh
+
+NUMS1=( `cut -w -f 1 day01.txt | sort` )
+NUMS2=( `cut -w -f 2 day01.txt | sort` )
+
+declare -A NUMS3
+NUMS3=( `cut -w -f 2 day01.txt | sort | uniq -c | awk '{ print $2, $1 }'` )
+
+LIMIT=${#NUMS1[*]}
+DIFF=0
+SCORE=0
+
+for (( i=1; i<=$LIMIT; i++ )); do
+    A=${NUMS1[$i]}
+    B=${NUMS2[$i]}
+    if [ $A -lt $B ]; then
+        DIFF=$((DIFF + B - A))
+    else
+        DIFF=$((DIFF + A - B))
+    fi
+    if [ ! -z "${NUMS3[$A]}" ]; then
+        COUNT=${NUMS3[$A]}
+        SCORE=$((SCORE + A * COUNT))
+    fi
+done
+
+echo $DIFF
+echo $SCORE
