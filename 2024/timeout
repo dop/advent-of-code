@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+const child_process = require('child_process')
+let timeout_in_seconds = 5
+let script = process.argv.at(-1)
+
+for (let i = 0; i < process.argv.length; i++) {
+  const arg = process.argv[i]
+  if (arg === '--seconds' || arg === '-s') {
+    timeout_in_seconds = Number(process.argv[++i])
+  } else {
+    script = arg
+  }
+}
+
+const proc = child_process.spawn('node', [script], {
+  timeout: timeout_in_seconds * 1000,
+  stdio: 'inherit',
+})
+
+proc.on('exit', function (code, signal) {
+  if (code !== 0) {
+    process.exit(code ?? 1)
+  }
+})
