@@ -27,8 +27,8 @@ let spec = fs.readFileSync(0, {encoding:'utf-8'}).trim()
 
   // console.log(disk.join(''))
 
-  let i = 0;
-  let j = disk.length - 1;
+  let i = 0
+  let j = disk.length - 1
   while (i < j) {
     while (i < disk.length && disk[i] !== '.')
       i += 1
@@ -80,7 +80,7 @@ let spec = fs.readFileSync(0, {encoding:'utf-8'}).trim()
           disk.splice(i+1, 0, { free })
         }
         // console.log(str(disk))
-        break;
+        break
       }
     }
   }

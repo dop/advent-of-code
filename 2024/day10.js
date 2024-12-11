@@ -19,7 +19,7 @@ for (let r = 0; r < landscape.length; r++) {
 let score = 0
 
 function in_bounds(r, c) {
-  return r >= 0 && r < landscape.length && c >= 0 && c < landscape[r].length;
+  return r >= 0 && r < landscape.length && c >= 0 && c < landscape[r].length
 }
 
 const moves = [[1, 0], [0, 1], [-1, 0], [0, -1]]
