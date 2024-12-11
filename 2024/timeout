@@ -13,13 +13,27 @@ for (let i = 0; i < process.argv.length; i++) {
   }
 }
 
+let start = Date.now()
 const proc = child_process.spawn('node', [script], {
   timeout: timeout_in_seconds * 1000,
   stdio: 'inherit',
 })
 
 proc.on('exit', function (code, signal) {
-  if (code !== 0) {
+  if (code === 0) {
+    console.log(`Done in ${interval(Date.now() - start)}.`)
+  } else {
     process.exit(code ?? 1)
   }
 })
+
+function interval(time_in_ms) {
+  let s = time_in_ms / 1000
+  let m = Math.floor(s / 60)
+  let h = Math.floor(m / 60)
+  return [
+    [String(h), 'h'],
+    [String(m % 60), 'm'],
+    [(s%60).toLocaleString(undefined, {maximumFractionDigits: 3}), 's'],
+  ].filter(([x]) => x !== '0').map(x => x.join('')).join(' ')
+}
