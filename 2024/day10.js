@@ -24,35 +24,47 @@ function in_bounds(r, c) {
 
 const moves = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
-function count_score(start) {
+// Counting score and rating with the same BFS works because all paths
+// to the same peak have same length.
+function count_score_and_rating(start) {
   const peaks = new Set
   const visits = new Set
   const queue = [start]
+  let rating = 0
 
   while (queue.length) {
     const [r, c] = queue.shift()
-    // console.log(r, c, landscape[r][c])
     visits.add(r + ',' + c)
     for (const [dr, dc] of moves) {
       const nr = r + dr
       const nc = c + dc
-      // console.log('next?', nr, nc)
       if (in_bounds(nr, nc) && landscape[r][c] === landscape[nr][nc] - 1 && !visits.has(nr + ',' + nc)) {
-        if (landscape[nr][nc] === 9)
+        if (landscape[nr][nc] === 9) {
+          rating++
           peaks.add(nr + ',' + nc)
-        else
+        } else {
           queue.push([nr, nc])
+        }
       }
     }
   }
 
-  return peaks.size
+  return [peaks.size, rating]
 }
 
-console.log( starts.reduce((sum, p) => sum + count_score(p), 0) )
+console.log(
+  starts.map(count_score_and_rating)
+    .reduce(([sum1, sum2], [score, rating]) => [sum1 + score, sum2 + rating], [0, 0])
+)
+
+// Following code is not longer necessary ...
+
+/*
+console.log( starts.reduce((sum, p) => sum + count_score(p)[0], 0) )
+console.log( starts.reduce((sum, p) => sum + count_score(p)[1], 0) )
 
 function count_rating(start) {
-  const queue = [[...start, new Set(start.join(','))]]
+  const queue = [[...start, new Set([start.join(',')])]]
   let rating = 0
 
   while (queue.length) {
@@ -76,3 +88,4 @@ function count_rating(start) {
 }
 
 console.log( starts.reduce((sum, p) => sum + count_rating(p), 0) )
+*/
