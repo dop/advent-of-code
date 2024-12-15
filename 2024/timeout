@@ -16,8 +16,21 @@ for (let i = 2; i < process.argv.length; i++) {
 let start = Date.now()
 const proc = child_process.spawn('node', args, {
   timeout: timeout_in_seconds * 1000,
-  stdio: 'inherit',
+  stdio: ['inherit', 'pipe', 'inherit'],
 })
+
+let output_window = ''
+proc.stdout.on('data', function (chunk) {
+  output_window += chunk.toString()
+  output_window = output_window.substring(output_window.length - 256)
+  process.stdout.write(chunk)
+})
+proc.stdout.on('end', function () {
+  const last_line = output_window.trim().split('\n').at(-1)
+  const copy = child_process.spawn('pbcopy')
+  copy.stdin.write(last_line)
+  copy.stdin.end()
+});
 
 proc.on('exit', function (code, signal) {
   if (code === 0) {
