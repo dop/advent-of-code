@@ -27,9 +27,11 @@ proc.stdout.on('data', function (chunk) {
 })
 proc.stdout.on('end', function () {
   const last_line = output_window.trim().split('\n').at(-1)
-  const copy = child_process.spawn('pbcopy')
-  copy.stdin.write(last_line)
-  copy.stdin.end()
+  if (last_line.length) {
+    const copy = child_process.spawn('pbcopy')
+    copy.stdin.write(last_line)
+    copy.stdin.end()
+  }
 });
 
 proc.on('exit', function (code, signal) {
