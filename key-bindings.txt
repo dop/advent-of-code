@@ -1,2 +1,0 @@
-C-a beginning of input
-C-w backward delete word
