@@ -58,13 +58,13 @@ class Heap {
 
 class MaxHeap extends Heap {
   constructor() {
-    super((a, b) => a > b)
+    super((a, b) => a >= b)
   }
 }
 
 class MinHeap extends Heap {
   constructor() {
-    super((a, b) => a < b)
+    super((a, b) => a <= b)
   }
 }
 
@@ -78,12 +78,8 @@ function test() {
   heap.insert(0)
 
   assert.equal( heap.peak(), 4 )
-
   assert.equal( heap.remove(), 4 )
-
   assert.equal( heap.peak(), 3 )
-
-  console.log(heap)
 
   let heap2 = new MinHeap
 
@@ -99,36 +95,41 @@ function test() {
 
   assert.equal( heap2.peak(), 1 )
 
-  console.log(heap2)
-
   let heap3 = new MaxHeap
 
   heap3.insert(0)
-  heap3.insert(0)
-  heap3.insert(0)
+  heap3.insert(1)
   heap3.insert(0)
   heap3.insert(0)
   heap3.insert(1)
 
-  console.log(heap3)
-
   assert.equal( heap3.remove(), 1 )
-  assert.equal( heap3.remove(), 0 )
-  assert.equal( heap3.remove(), 0 )
+  assert.equal( heap3.remove(), 1 )
   assert.equal( heap3.remove(), 0 )
   assert.equal( heap3.remove(), 0 )
   assert.equal( heap3.remove(), 0 )
   assert.equal( heap3.remove(), undefined )
 
-  console.log(heap3)
-
   heap3.insert(0)
   heap3.insert(1)
 
-  console.log(heap3)
+  let heap4 = new MinHeap
+
+  heap4.insert(1)
+  heap4.insert(1)
+  heap4.insert(0)
+  heap4.insert(1)
+  heap4.insert(0)
+
+  assert.equal( heap4.remove(), 0 )
+  assert.equal( heap4.remove(), 0 )
+  assert.equal( heap4.remove(), 1 )
+  assert.equal( heap4.remove(), 1 )
+  assert.equal( heap4.remove(), 1 )
+  assert.equal( heap4.remove(), undefined )
 }
 
-// test()
+test()
 
 module.exports = {
   Heap,
