@@ -5,22 +5,15 @@ const {Heap} = require('./heap')
 let grid = fs.readFileSync(0, {encoding: 'utf-8'}).trim().split('\n')
 
 // r, c, direction, cost
-let start = [0, 0, '>', 0, 0]
+let start = [0, 0, '>', 0]
 let goal = [0, 0]
-let visited = new Set
-
-const to_str = (x) => x.join(',')
-const of_str = (x) => {
-  const [r, c, dir] = x.split(',')
-  return [Number(r), Number(c), dir]
-}
 
 for (let r = 0; r < grid.length; r++) {
   for (let c = 0; c < grid[r].length; c++) {
     if (grid[r][c] == 'S')
       start = [r, c, '>', 0]
     else if (grid[r][c] == 'E')
-      goal= [r, c]
+      goal = [r, c]
   }
 }
 
