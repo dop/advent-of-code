@@ -32,25 +32,37 @@ function price(secret) {
   return Number(secret % BigInt(10))
 }
 
-let seqs = {}
-let diffs = {}
-let bananas = new Map
+let hash = (w) => {
+  let k = 0
+  for (let i = 0; i < w.length; i++) {
+    k *= 19
+    k += w[i] + 9
+  }
+  return k
+}
+
+let seqs = new Int16Array(19**4)
+let bananas = new Int32Array(19**4)
 let secrets2 = secrets.slice(0)
+let diffs = new Int8Array(2000)
 for (let j = 0; j < secrets.length; j++) {
-  diffs[j] = []
-  seqs[j] = new Set
   for (let i = 0; i < 2000; i++) {
     let next = next_secret(secrets2[j])
-    diffs[j].push(price(next) - price(secrets2[j]))
+    diffs[i] = price(next) - price(secrets2[j])
     secrets2[j] = next
     if (i > 2) {
-      let k = diffs[j].slice(-4)+''
-      if (!seqs[j].has(k)) {
-        seqs[j].add(k)
-        bananas.set(k, (bananas.get(k) ?? 0) + price(next))
+      // let k = hash(diffs.slice(i-3, i+1))
+      let k = 0
+      for (let l = i-3; l < i+1; l++) {
+        k *= 19
+        k += diffs[l] + 9
+      }
+      if (seqs[k] != j) {
+        seqs[k] = j
+        bananas[k] += price(next)
       }
     }
   }
 }
 
-console.log( bananas.values().reduce((a, b) => Math.max(a, b), 0) )
+console.log( bananas.reduce((a, b) => Math.max(a, b), 0) )
