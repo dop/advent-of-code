@@ -1,6 +1,6 @@
 const assert = require('assert')
 const fs = require('fs')
-const {Heap} = require('./heap')
+const {Heap} = require('../heap')
 
 const W = 71
 const H = 71

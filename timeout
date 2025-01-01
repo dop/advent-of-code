@@ -38,6 +38,7 @@ proc.on('exit', function (code, signal) {
   if (code === 0) {
     console.log(`Done in ${interval(Date.now() - start)}.`)
   } else {
+    console.log(code ? `Process exited with ${code}.` : `Process terminated by ${signal}.`)
     process.exit(code ?? 1)
   }
 })

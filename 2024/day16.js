@@ -1,6 +1,6 @@
 const assert = require('assert')
 const fs = require('fs')
-const {Heap} = require('./heap')
+const {Heap} = require('../heap')
 
 let grid = fs.readFileSync(0, {encoding: 'utf-8'}).trim().split('\n')
 
